@@ -2,16 +2,10 @@
 {
     private static void Main(string[] args)
     {
-        var arr = new float[][]
-        {
-            new float[] { 2, 3, -1 },
-            new float[] { 1, -1, 6 },
-            new float[] { 6, -2, 1 },
-        };
-
-        var absoluteTerms = new float[] { 7, 14, 11 };
-
-        var g = new GaussMethod(arr, absoluteTerms);
+        float[][] arr = File.ReadAllLines("input.txt")
+                   .Select(l => l.Split(' ').Select(i => float.Parse(i)).ToArray())
+                   .ToArray();
+        var g = new GaussMethod(arr);
         Console.WriteLine($"{g.Solve()}");
     }
 }
@@ -21,17 +15,35 @@
 public class GaussMethod
 {
     private float[][] array;
-    private float[] absoluteTerms;
-    public GaussMethod(float[][] arr, float[] absT)
+    public GaussMethod(float[][] arr)
     {
         array = arr;
-        absoluteTerms = absT;
     }
 
     public float[][] Solve()
     {
-        ChangeRowValues();
-        Console.WriteLine($"{array[FindIndexMaxAbsNumber(0)][0]}");
+        for (var i = 0; i < array[0].Length - 1; i++)
+        {
+            int indexMax = FindIndexMaxAbsNumber(i);
+            var maxEl = array[indexMax][i];
+
+            // нормировка строки
+            for (int j = i; j < array[indexMax].Length; j++)
+            {
+                array[indexMax][j] /= maxEl;
+            }
+
+            // изменение значений других строк
+            for (int k = 0; k < array.Length; k++)
+            {
+                if (k == indexMax) continue;
+                var el = array[k][i];
+                for (var j = 0; j < array[k].Length; j++)
+                {
+                    array[k][j] -= array[indexMax][j] * el;
+                }
+            }
+        }
 
         return array;
     }
@@ -51,31 +63,4 @@ public class GaussMethod
         }
         return indexMax;
     }
-
-    private void ChangeRowValues()
-    {
-        for (var i = 0; i < array[0].Length; i++)
-        {
-            int indexMax = FindIndexMaxAbsNumber(i);
-            var maxEl = array[indexMax][i];
-
-            // нормировка строки
-            for (int j = i; j < array[indexMax].Length; j++)
-            {
-                array[indexMax][j] /= maxEl;
-            }
-
-            // изменение значений других строк
-            for (int k = 0; k < array.Length; k++)
-            {
-                if (k == indexMax) continue;
-                for (var j = 0; j < array[i].Length; j++)
-                {
-                    array[k][j] -= array[indexMax][j] * array[k][i];
-                }
-            }
-        }
-    }
 }
-
-
