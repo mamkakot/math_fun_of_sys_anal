@@ -1,14 +1,11 @@
-﻿internal class Program
-{
-    private static void Main(string[] args)
-    {
-        float[][] arr = File.ReadAllLines("input.txt")
-                   .Select(l => l.Split(' ').Select(i => float.Parse(i)).ToArray())
-                   .ToArray();
-        var g = new GaussMethod(arr);
-        Console.WriteLine($"{g.Solve()}");
-    }
-}
+﻿float[][] arr = File.ReadAllLines("input.txt")
+            .Select(l => l.Split(',')
+            .Select(i => float.Parse(i)).ToArray()).ToArray();
+
+var g = new GaussMethod(arr);
+
+File.WriteAllLines("output.txt", g.Solve().Select(x => string.Join(' ', x)));
+
 
 // реализация метода Гаусса с выбором главного элемента
 // для первой лабораторной
