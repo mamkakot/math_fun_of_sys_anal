@@ -2,68 +2,66 @@ namespace math_fun_of_sys_anal;
 
 public class JacobiMethod
 {
-    private const double Eps = 0.001;
+    private const double Eps = 0.0001;
     private readonly double[][] _array;
-    private readonly double[] _free;
+    private const string Path = "C:/Users/Dmitry/Documents/x_array.txt";
 
-    public JacobiMethod(double[][] arr)
+    public JacobiMethod(double[][] arr, double[] x)
     {
-        _array = new double[arr.Length][];
-        for (int i = 0; i < arr.Length; i++)
-        {
-            _array[i] = new double[arr[i].Length - 1];
-            Array.Copy(arr[i], _array[i], arr[i].Length - 1);
-        }
-
-        _free = arr.Select(x => x[arr.Length]).ToArray();
+        _array = arr;
+        X = x;
     }
+    
+    public double[] X { get; set;  }
 
-    public string Solve(double[] x)
+    public string Solve()
     {
-        PrepareArray();
-
+        File.WriteAllText(Path, "");
         var l = _array.Length;
-        var b1 = _array.Select(x => x.Sum(Math.Abs) - x[l - 1]).Max();
-        // var b2 = _array.Select((x, i) => Math.Abs(x[i])).Max();
-        var b2 = Enumerable.Range(0, _array[0].Length - 1)
-            .Select(i => _array.Sum(a => Math.Abs(a[i])))
-            .Max();
         var tempX = new double[l];
 
-        double norm;
-        do
+        double err = 1;
+        while (err >= Eps)
         {
-            for (var i = 0; i < l; i++)
+            for (int i = 0; i < l; i++)
             {
-                tempX[i] = _free[i];
-                for (var g = 0; g < l - 1; g++)
-                    if (i != g)
-                        tempX[i] += _array[i][g] * x[g];
+                tempX[i] = GetX(i, X);
             }
+            err = CalculateError(X, tempX);
+            GenericFunctions.WriteXsToFile(Path, X);
+            tempX.CopyTo(X, 0);
+        }
 
-            norm = Math.Abs(x[0] - tempX[0]);
-            for (var h = 0; h < l; h++)
-            {
-                if (Math.Abs(x[h] - tempX[h]) > norm)
-                    norm = Math.Abs(x[h] - tempX[h]);
-                x[h] = tempX[h];
-            }
-        } while (norm > Eps);
-
-        var res = string.Join('\n', x);
+        var res = GenericFunctions.BetterLookingResults(GenericFunctions.Round(X));
         return res;
     }
 
-    private void PrepareArray()
+    private double CalculateError(double[] x1, double[] x2)
     {
-        var l = _array.Length;
-        for (var i = 0; i < l; i++)
+        var len = x1.Length;
+        var errors = new double[len];
+        for (int i = 0; i < len; i++)
         {
-            var x = _array[i][i];
-            for (var j = 0; j < l; j++) _array[i][j] /= -x;
-
-            _array[i][l - 1] /= x;
-            _array[i][i] = 0;
+            errors[i] = Math.Abs(x1[i] - x2[i]);
         }
+        return errors.Max();
+    }
+
+    private double GetX(int xNum, double[] x)
+    {
+        double temp = _array[xNum].Last();
+        for (int i = 0; i < _array.Length; i++)
+        {
+            if (i == xNum)
+            {
+                continue;
+            }
+
+            temp -= _array[xNum][i] * x[i];
+        }
+
+        temp /= _array[xNum][xNum];
+
+        return temp;
     }
 }

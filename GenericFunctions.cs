@@ -17,6 +17,20 @@ public static class GenericFunctions
         return arr;
     }
 
+    public static double[] Round(double[] arr)
+    {
+        var l = arr.Length;
+        for (var i = 0; i < arr.Length; i++)
+        {
+            arr[i] = Math.Round(arr[i], 2, MidpointRounding.ToEven);
+            var error = Math.Abs(arr[i] - Math.Round(arr[i], 0, MidpointRounding.ToEven));
+            var relativeError = error / arr[i];
+            if (relativeError < 1e-5 || error < 1e-5) arr[i] = (int)Math.Round(arr[i], 0, MidpointRounding.ToEven);
+        }
+
+        return arr;
+    }
+
     // функция просто для того, чтобы результаты
     // выполнения алгоритма выглядели красивее
     public static string BetterLookingResults(double[][] arr)
@@ -35,5 +49,18 @@ public static class GenericFunctions
         var res = string.Concat(Enumerable.Range(0, l)
             .Select(i => $"x{i + 1} = {arr[i].Last()}; \n"));
         return res;
+    }
+
+    public static string BetterLookingResults(double[] arr)
+    {
+        var l = arr.Length;
+        var res = string.Concat(Enumerable.Range(0, l)
+            .Select(i => $"x{i + 1} = {arr[i]}; \n"));
+        return res;
+    }
+
+    public static void WriteXsToFile(string path, double[] x)
+    {
+        File.AppendAllText(path, $"{string.Join(' ', x)}\n");
     }
 }
