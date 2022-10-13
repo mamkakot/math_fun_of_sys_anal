@@ -17,6 +17,7 @@ public static class GenericFunctions
         return arr;
     }
 
+    // тоже округление, но чисто для итерационных методов
     public static double[] Round(double[] arr)
     {
         var l = arr.Length;
@@ -51,6 +52,7 @@ public static class GenericFunctions
         return res;
     }
 
+    // то же, что выше, только -- опять же -- для итерационных методов
     public static string BetterLookingResults(double[] arr)
     {
         var l = arr.Length;
@@ -59,6 +61,7 @@ public static class GenericFunctions
         return res;
     }
 
+    // запись иксов в файл -- опять же для итерационных методов
     public static void WriteXsToFile(string path, double[] x)
     {
         File.AppendAllText(path, $"{string.Join(' ', x)}\n");

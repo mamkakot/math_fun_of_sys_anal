@@ -16,6 +16,7 @@ public class SLAEGenerator
         for (var i = 0; i < n; i++) Answers[i] = Math.Round(_random.NextDouble() * (_xMax - _xMin) + _xMin, 2);
     }
 
+    // всякие сеттеры для регуляции разброса, отдельно для коэффициентов при независимых переменных
     public double Min
     {
         set => _min = value;
@@ -25,17 +26,19 @@ public class SLAEGenerator
     {
         set => _max = value;
     }
-    
+
+    // и для самих независимых переменных
     public double XMin
     {
         set => _xMin = value;
     }
-    
+
     public double XMax
     {
         set => _xMax = value;
     }
 
+    // массив независимых переменных
     public double[] Answers { get; }
 
     public string Generate()
@@ -55,30 +58,26 @@ public class SLAEGenerator
     {
         var row = new double[n + 1];
         for (var i = 0; i < n; i++)
-        {
-            if (i == rowNumber)
-            {
-                continue;
-            }
-
-            row[i] = Math.Round(_random.NextDouble() * (_max - _min) + _min, 2);
-        }
+            // вот эта дрянь ниже нужна для того, чтобы генерировались такие системы, что метод Якоби
+            // вообще может их решить, причём гарантированно (ниже написано, почему)
+            if (i != rowNumber)
+                row[i] = Math.Round(_random.NextDouble() * (_max - _min) + _min, 2);
 
         double sum = 0;
-        for (int i = 0; i < n; i++)
+        for (var i = 0; i < n; i++)
         {
-            if (i == rowNumber)
-            {
-                continue;
-            }
+            if (i == rowNumber) continue;
 
             sum += Math.Abs(row[i]);
         }
 
         var sign = _random.NextDouble() > 0.5 ? 1 : -1;
 
+        // вот тут продолжение той же дрянной идеи, что описана выше:
+        // элемент на главной диагонали создаётся таким, чтобы модуль его был больше либо равен сумме модулей
+        // других членов строки, то есть возникало преобладание диагональных элементов
         row[rowNumber] = Math.Round(sum + Math.Abs(_random.NextDouble() * (_max - _min) + _min), 2) * sign;
-        
+
         var f = 0.0;
         for (var i = 0; i < n; i++)
             f += Answers[i] * row[i];
@@ -87,25 +86,10 @@ public class SLAEGenerator
         return row;
     }
 
+    // это чтобы ранг матрицы всегда был равен размерности матрицы
     private bool CompareRows(double[] row1, double[] row2)
     {
         var c = row1[0] / row2[0];
         return row1.Where((t, i) => Math.Abs(t - row2[i] * c) < 0.0001).Any();
-    }
-
-    private bool CheckRow(int index, double[] row)
-    {
-        double sum = 0;
-        for (int i = 0; i < row.Length - 1; i++)
-        {
-            if (i == index)
-            {
-                continue;
-            }
-
-            sum += Math.Abs(row[i]);
-        }
-
-        return Math.Abs(row[index]) >= sum;
     }
 }

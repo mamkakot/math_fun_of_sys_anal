@@ -1,46 +1,47 @@
 ﻿using System.Diagnostics;
 using math_fun_of_sys_anal;
 
-var gen = new SLAEGenerator(20);
+var generator = new SLAEGenerator(80);
 
 File.WriteAllText("generated_answers.txt",
-    string.Join('\n', gen.Answers));
-File.WriteAllText("generated_input.txt", gen.Generate());
+    string.Join('\n', generator.Answers));
+File.WriteAllText("generated_input.txt", generator.Generate());
 
-var arr = File
-    .ReadAllLines("generated_input.txt") // если вдруг это не будет работать -- поменять путь на "input.txt" 
-    .Select(l => l.Split(' ') // если же и перемена пути не поможет -- молиться.
-        .Select(double.Parse).ToArray()).ToArray();
+var arrayGauss = File.ReadAllLines("generated_input.txt").Select(l => l.Split(' ').Select(double.Parse).ToArray()).ToArray();
+var arrayJacobi = new double[arrayGauss.Length][];
 
-var arr2 = new double[arr.Length][];
-for (var i = 0; i < arr.Length; i++)
+for (var i = 0; i < arrayGauss.Length; i++)
 {
-    arr2[i] = new double[arr[i].Length];
-    arr[i].CopyTo(arr2[i], 0);
+    arrayJacobi[i] = new double[arrayGauss[i].Length];
+    arrayGauss[i].CopyTo(arrayJacobi[i], 0);
 }
 
 var stopWatch = new Stopwatch();
 stopWatch.Start();
-var g = new GaussMethod(arr);
+
+var g = new GaussMethod(arrayGauss);
 var resultGauss = g.Solve();
+
 stopWatch.Stop();
 var durationGauss = stopWatch.ElapsedMilliseconds;
 
 File.WriteAllText("output_gauss.txt",
     $"{resultGauss}\nДлительность: {durationGauss} мс");
 
-var stopWatch2 = new Stopwatch();
-var x = new double[arr2.Length];
-var random = new Random();
-for (var i = 0; i < arr2.Length; i++)
-    for (var k = 0; k < arr2[i].Length; k++)
-        x[i] = 0;
-stopWatch2.Start();
-var j = new JacobiMethod(arr2, x);
-j.X = x;
+
+var x = new double[arrayJacobi.Length]; // он так и так нулями заполняется
+
+stopWatch.Restart();
+
+var j = new JacobiMethod(arrayJacobi, x)
+{
+    // дабы иксы в файл не писались
+    WriteXsIntoFile = false
+};
+
 var resultJacobi = j.Solve();
-stopWatch2.Stop();
-var durationJacobi = stopWatch2.ElapsedMilliseconds;
+stopWatch.Stop();
+var durationJacobi = stopWatch.ElapsedMilliseconds;
 
 File.WriteAllText("output_jacobi.txt",
     $"{resultJacobi}\nДлительность: {durationJacobi} мс");
